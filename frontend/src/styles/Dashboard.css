@@ -1,0 +1,106 @@
+.dash-stats-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  flex: 1;
+  min-width: 140px;
+  transition: var(--transition);
+}
+
+.stat-card:hover { border-color: var(--border-light); transform: translateY(-1px); }
+
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.stat-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 2px; }
+.stat-value { font-size: 1.4rem; font-weight: 800; color: var(--text-bright); font-family: var(--font-display); line-height: 1.2; }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 16px;
+}
+
+.dash-col-left, .dash-col-right, .dash-col-center {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Streak */
+.streak-row { display: flex; gap: 4px; justify-content: space-between; }
+.streak-day { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.streak-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 2px solid transparent;
+}
+.streak-dot.studied { background: rgba(52,211,153,0.2); color: var(--accent-green); border-color: var(--accent-green); }
+.streak-dot.missed { background: rgba(251,113,133,0.1); color: rgba(251,113,133,0.5); border-color: rgba(251,113,133,0.2); }
+.streak-day-label { font-size: 0.65rem; font-weight: 600; color: var(--text-muted); }
+
+/* Medals */
+.medals-row { display: flex; justify-content: space-around; }
+.medal-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.medal-count { font-size: 1.5rem; font-weight: 800; color: var(--text-bright); font-family: var(--font-display); }
+.medal-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
+
+/* Goal */
+.goal-card .goal-name { font-size: 1.1rem; font-weight: 700; color: var(--text-bright); margin-bottom: 4px; }
+.goal-dates { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 16px; }
+.goal-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+.goal-stat { background: var(--bg-input); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+.goal-stat-value { font-size: 1.1rem; font-weight: 800; color: var(--text-bright); font-family: var(--font-display); }
+.goal-stat-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.goal-pace-row { display: flex; gap: 12px; margin-top: 12px; }
+.pace-item { flex: 1; background: var(--bg-input); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+.pace-item.highlight { background: rgba(91,164,207,0.1); border: 1px solid rgba(91,164,207,0.2); }
+.pace-val { font-size: 0.95rem; font-weight: 700; color: var(--text-bright); }
+.pace-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+/* Courses */
+.courses-list { display: flex; flex-direction: column; gap: 12px; }
+.course-row { display: flex; align-items: center; gap: 10px; }
+.course-emoji { font-size: 1.2rem; flex-shrink: 0; }
+.course-info { flex: 1; min-width: 0; }
+.course-name { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.course-time { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+
+/* Study days */
+.study-days-status { display: flex; align-items: center; font-size: 0.85rem; font-weight: 600; padding: 8px 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.pace-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pace-card { background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+.pace-card.required { background: rgba(91,164,207,0.1); border: 1px solid rgba(91,164,207,0.2); }
+.pace-card-val { font-size: 1rem; font-weight: 700; color: var(--text-bright); }
+.pace-card-label { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 1100px) {
+  .dash-grid { grid-template-columns: 1fr 1fr; }
+  .dash-col-right { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+}
+
+@media (max-width: 768px) {
+  .dash-stats-row { gap: 8px; }
+  .stat-card { min-width: 120px; padding: 12px; }
+  .dash-grid { grid-template-columns: 1fr; }
+}
