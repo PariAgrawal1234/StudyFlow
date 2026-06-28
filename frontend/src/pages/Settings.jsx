@@ -7,6 +7,7 @@ import { MdSave, MdPerson, MdNotifications, MdEmojiEvents } from 'react-icons/md
 export default function Settings() {
   const { user, updateUser, updateSettings } = useAuth();
   const [name, setName] = useState(user?.name || '');
+  const [username, setUsername] = useState(user?.username || '');
   const [medalGoals, setMedalGoals] = useState(user?.settings?.medalGoals || { bronze: 180, silver: 240, gold: 300 });
   const [notifications, setNotifications] = useState(user?.settings?.notifications || {
     show: true, sound: true, achievements: true, dailyGoal: true, dailyMedals: true, streaks: true, weeklyBadges: true
@@ -14,9 +15,11 @@ export default function Settings() {
 
   const handleProfileSave = async () => {
     try {
-      await updateUser({ name });
+      await updateUser({ name, username: username.toLowerCase().replace(/[^a-z0-9_]/g, '') });
       toast.success('Profile updated');
-    } catch { toast.error('Failed to update profile'); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update profile');
+    }
   };
 
   const handleSettingsSave = async () => {
@@ -39,6 +42,13 @@ export default function Settings() {
           <div className="form-group">
             <label>Display Name</label>
             <input className="input" value={name} onChange={e => setName(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Username <span style={{ color: 'var(--text-muted)', fontWeight: 400, textTransform: 'none' }}>(used to find you in friend search)</span></label>
+            <div style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>@</span>
+              <input className="input" style={{ paddingLeft: 26 }} placeholder="yourhandle" value={username} onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} />
+            </div>
           </div>
           <div className="form-group">
             <label>Email</label>

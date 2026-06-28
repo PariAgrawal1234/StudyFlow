@@ -6,6 +6,21 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
   avatar: { type: String, default: '' },
+  username: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  friendRequests: [{
+    from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    status: { type: String, enum: ['pending', 'accepted', 'declined'], default: 'pending' },
+    createdAt: { type: Date, default: Date.now }
+  }],
+  sentRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date, default: Date.now },
+  currentlyStudying: {
+    active: { type: Boolean, default: false },
+    courseName: { type: String, default: '' },
+    startedAt: { type: Date }
+  },
   settings: {
     medalGoals: {
       bronze: { type: Number, default: 180 },
@@ -21,7 +36,8 @@ const userSchema = new mongoose.Schema({
       streaks: { type: Boolean, default: true },
       weeklyBadges: { type: Boolean, default: true }
     },
-    theme: { type: String, default: 'dark' }
+    theme: { type: String, default: 'dark' },
+    profilePublic: { type: Boolean, default: true }
   },
   createdAt: { type: Date, default: Date.now }
 });

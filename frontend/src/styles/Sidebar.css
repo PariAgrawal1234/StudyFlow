@@ -129,6 +129,24 @@
   margin-top: 8px;
 }
 
+.nav-badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.55rem;
+  font-weight: 800;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--bg-sidebar);
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
   .sidebar {
     bottom: 0; top: auto;

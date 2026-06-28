@@ -6,44 +6,44 @@ const TimerContext = createContext(null);
 
 export const TimerProvider = ({ children }) => {
   const [isRunning, setIsRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0); // seconds
+  const [elapsed, setElapsed] = useState(0);
   const [timerType, setTimerType] = useState('stopwatch');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [sessionId, setSessionId] = useState(null);
   const [startTime, setStartTime] = useState(null);
+  const [accentColor, setAccentColor] = useState('#A78BFA'); // purple default
   const intervalRef = useRef(null);
+  const socketEmitRef = useRef({ start: null, stop: null });
+
+  const registerSocketEmitters = (emitStart, emitStop) => {
+    socketEmitRef.current = { start: emitStart, stop: emitStop };
+  };
 
   useEffect(() => {
     if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setElapsed(prev => prev + 1);
-      }, 1000);
+      intervalRef.current = setInterval(() => setElapsed(prev => prev + 1), 1000);
     } else {
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
   }, [isRunning]);
 
-  const start = useCallback(async (courseId) => {
+  const start = useCallback(async (courseId, courseName) => {
     try {
       const res = await api.post('/sessions/start', { courseId, timerType });
       setSessionId(res.data._id);
       setStartTime(new Date());
       setIsRunning(true);
       setElapsed(0);
+      socketEmitRef.current.start?.(courseName || 'General Study');
       toast.success('Session started!');
     } catch (err) {
       toast.error('Failed to start session');
     }
   }, [timerType]);
 
-  const pause = useCallback(() => {
-    setIsRunning(false);
-  }, []);
-
-  const resume = useCallback(() => {
-    setIsRunning(true);
-  }, []);
+  const pause = useCallback(() => setIsRunning(false), []);
+  const resume = useCallback(() => setIsRunning(true), []);
 
   const stop = useCallback(async (notes = '') => {
     if (!sessionId) return;
@@ -54,6 +54,7 @@ export const TimerProvider = ({ children }) => {
     } catch (err) {
       toast.error('Failed to save session');
     }
+    socketEmitRef.current.stop?.();
     setSessionId(null);
     setElapsed(0);
     setStartTime(null);
@@ -80,9 +81,9 @@ export const TimerProvider = ({ children }) => {
     <TimerContext.Provider value={{
       isRunning, elapsed, timerType, setTimerType,
       selectedCourse, setSelectedCourse,
-      sessionId, startTime,
+      sessionId, startTime, accentColor, setAccentColor,
       start, pause, resume, stop,
-      formatTime, formatTimerDisplay
+      formatTime, formatTimerDisplay, registerSocketEmitters
     }}>
       {children}
     </TimerContext.Provider>
