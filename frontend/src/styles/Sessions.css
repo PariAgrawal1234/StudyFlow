@@ -1,0 +1,86 @@
+.session-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.session-row:hover {
+  border-color: var(--border-light);
+  background: var(--bg-card-hover);
+}
+
+.session-row:hover .session-delete {
+  opacity: 1;
+}
+
+.session-color-bar {
+  width: 3px;
+  height: 36px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.session-course-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-course-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-notes {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.session-time-info {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.session-duration {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  font-family: var(--font-display);
+}
+
+.session-hours {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.session-type-badge {
+  flex-shrink: 0;
+}
+
+.session-delete {
+  opacity: 0;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+  padding: 4px 8px;
+}
+
+@media (max-width: 640px) {
+  .session-delete { opacity: 1; }
+  .session-type-badge { display: none; }
+}

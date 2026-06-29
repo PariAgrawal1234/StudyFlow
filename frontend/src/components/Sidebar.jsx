@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   MdDashboard, MdTimer, MdBook, MdFlag, MdBarChart,
   MdSettings, MdLogout, MdSchool, MdEmojiEvents,
-  MdDirectionsRun, MdPeople
+  MdDirectionsRun, MdPeople, MdHistory
 } from 'react-icons/md';
 import api from '../utils/api';
 import '../styles/Sidebar.css';
@@ -13,6 +13,7 @@ const navItems = [
   { to: '/', icon: MdDashboard, label: 'Dashboard' },
   { to: '/timer', icon: MdTimer, label: 'Timer' },
   { to: '/friends', icon: MdPeople, label: 'Room', badge: true },
+  { to: '/sessions', icon: MdHistory, label: 'Sessions' },
   { to: '/courses', icon: MdBook, label: 'Courses' },
   { to: '/goals', icon: MdFlag, label: 'Goals' },
   { to: '/stats', icon: MdBarChart, label: 'Stats' },

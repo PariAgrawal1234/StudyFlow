@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import Header from '../components/Header';
+import CalendarHeatmap from '../components/CalendarHeatmap';
 import { Line, Bar, Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Filler, Tooltip, Legend } from 'chart.js';
 import { format, subDays } from 'date-fns';
-import { MdTrendingUp, MdAccessTime, MdBook, MdLocalFireDepartment, MdEmojiEvents, MdFlag } from 'react-icons/md';
+import { MdTrendingUp, MdAccessTime, MdBook, MdLocalFireDepartment, MdEmojiEvents, MdFlag, MdHistory } from 'react-icons/md';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Dashboard.css';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Filler, Tooltip, Legend);
@@ -31,11 +33,13 @@ export default function Dashboard() {
   const [data, setData] = useState(null);
   const [statsData, setStatsData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
+    const from180 = format(subDays(new Date(), 180), 'yyyy-MM-dd');
     Promise.all([
       api.get('/dashboard'),
-      api.get('/sessions/stats')
+      api.get(`/sessions/stats?from=${from180}`)
     ]).then(([d, s]) => {
       setData(d.data);
       setStatsData(s.data);
@@ -300,6 +304,21 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* Calendar Heatmap */}
+        {statsData && (
+          <div className="card" style={{ marginTop: 16 }}>
+            <div className="card-title" style={{ marginBottom: 16 }}>
+              <MdHistory /> Activity Calendar
+              <a href="/sessions" className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto', fontSize: '0.75rem' }}>View all sessions →</a>
+            </div>
+            <CalendarHeatmap
+              dailyBreakdown={statsData.dailyBreakdown}
+              medalGoals={user?.settings?.medalGoals || { bronze: 180, silver: 240, gold: 300 }}
+              weeks={18}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

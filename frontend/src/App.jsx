@@ -17,6 +17,7 @@ import Activities from './pages/Activities';
 import Leaderboard from './pages/Leaderboard';
 import Settings from './pages/Settings';
 import Friends from './pages/Friends';
+import Sessions from './pages/Sessions';
 
 function AppLayout({ children }) {
   return (
@@ -59,6 +60,7 @@ export default function App() {
               <Route path="/activities" element={<ProtectedRoute><AppLayout><Activities /></AppLayout></ProtectedRoute>} />
               <Route path="/leaderboard" element={<ProtectedRoute><AppLayout><Leaderboard /></AppLayout></ProtectedRoute>} />
               <Route path="/friends" element={<ProtectedRoute><AppLayout><Friends /></AppLayout></ProtectedRoute>} />
+              <Route path="/sessions" element={<ProtectedRoute><AppLayout><Sessions /></AppLayout></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><AppLayout><Settings /></AppLayout></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

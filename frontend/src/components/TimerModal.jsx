@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTimer } from '../context/TimerContext';
+import { useSocket } from '../context/SocketContext';
 import { MdClose, MdPlayArrow, MdStop } from 'react-icons/md';
 import api from '../utils/api';
-import toast from 'react-hot-toast';
 
 export default function TimerModal({ onClose }) {
   const { isRunning, elapsed, timerType, setTimerType, selectedCourse, setSelectedCourse, start, stop, formatTimerDisplay } = useTimer();
+  const { emitTimerStart, emitTimerStop } = useSocket();
   const [courses, setCourses] = useState([]);
   const [notes, setNotes] = useState('');
 
@@ -14,12 +15,14 @@ export default function TimerModal({ onClose }) {
   }, []);
 
   const handleStart = async () => {
-    await start(selectedCourse?._id);
+    await start(selectedCourse?._id, selectedCourse?.name);
+    emitTimerStart?.(selectedCourse?.name || 'General Study');
     onClose();
   };
 
   const handleStop = async () => {
     await stop(notes);
+    emitTimerStop?.();
     onClose();
   };
 
