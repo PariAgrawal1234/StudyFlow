@@ -89,7 +89,7 @@ router.get('/', auth, async (req, res) => {
     }
 
     // Medal check
-    const { medalGoals } = req.user.settings || { medalGoals: { bronze: 180, silver: 240, gold: 300 } };
+    const medalGoals = req.user.settings?.medalGoals || { bronze: 180, silver: 240, gold: 300 };
     const todayMedal = todayMinutes >= medalGoals.gold ? 'gold' : todayMinutes >= medalGoals.silver ? 'silver' : todayMinutes >= medalGoals.bronze ? 'bronze' : null;
 
     // Medals per period (last 30 days)

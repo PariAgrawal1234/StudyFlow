@@ -83,9 +83,9 @@ export default function Dashboard() {
     datasets: [{
       data: statsData.dayOfWeekAvg.map(d => Math.round(d.avgMinutes / 60 * 10) / 10),
       backgroundColor: 'rgba(91,164,207,0.15)',
-      borderColor: 'var(--accent-primary)',
+      borderColor: '#5BA4CF',
       borderWidth: 2,
-      pointBackgroundColor: 'var(--accent-primary)',
+      pointBackgroundColor: '#5BA4CF',
       pointRadius: 4
     }]
   };

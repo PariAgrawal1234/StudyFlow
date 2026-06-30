@@ -40,10 +40,11 @@
 }
 
 .timer-content-wrapper.fs-mode {
-  grid-template-columns: 1fr 240px;
+  display: flex;
   padding: 0;
   height: 100vh;
   align-items: center;
+  justify-content: center;
 }
 
 /* ── CENTER AREA ── */
@@ -60,6 +61,7 @@
 .fs-mode .timer-center-area {
   min-height: unset;
   height: 100%;
+  width: 100%;
   padding: 60px 40px;
 }
 
@@ -240,6 +242,43 @@
   background: rgba(255,255,255,0.14);
   border-color: rgba(255,255,255,0.25);
   transform: translateY(-1px);
+}
+
+/* Reset icon button */
+.timer-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.timer-icon-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.9);
+  transform: rotate(-45deg);
+}
+
+/* Pomodoro phase badge */
+.pomodoro-phase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 50px;
+  border: 1.5px solid;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
 }
 
 /* Notes */

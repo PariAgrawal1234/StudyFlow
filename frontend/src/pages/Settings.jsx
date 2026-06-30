@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
-import { MdSave, MdPerson, MdNotifications, MdEmojiEvents } from 'react-icons/md';
+import { MdSave, MdPerson, MdNotifications, MdEmojiEvents, MdLogout } from 'react-icons/md';
 
 export default function Settings() {
-  const { user, updateUser, updateSettings } = useAuth();
+  const { user, updateUser, updateSettings, logout } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState(user?.name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [medalGoals, setMedalGoals] = useState(user?.settings?.medalGoals || { bronze: 180, silver: 240, gold: 300 });
@@ -14,6 +16,7 @@ export default function Settings() {
   });
 
   const handleProfileSave = async () => {
+    if (!username.trim()) return toast.error('Username cannot be empty');
     try {
       await updateUser({ name, username: username.toLowerCase().replace(/[^a-z0-9_]/g, '') });
       toast.success('Profile updated');
@@ -29,12 +32,38 @@ export default function Settings() {
     } catch { toast.error('Failed to save settings'); }
   };
 
+  const handleLogout = () => {
+    if (!confirm('Are you sure you want to log out?')) return;
+    logout();
+    navigate('/login');
+  };
+
   const toggleNotif = (key) => setNotifications(n => ({ ...n, [key]: !n[key] }));
 
   return (
     <div>
-      <Header title="Settings" />
+      <Header title="Profile & Settings" />
       <div className="page" style={{ maxWidth: 700 }}>
+
+        {/* Profile header card with avatar + logout */}
+        <div className="card" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'linear-gradient(135deg, var(--accent-lavender), var(--accent-primary))',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '1.6rem', fontWeight: 700, color: 'white', flexShrink: 0
+          }}>
+            {user?.name?.charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-bright)' }}>{user?.name}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>@{user?.username || 'no-username-set'}</div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>{user?.email}</div>
+          </div>
+          <button className="btn btn-danger" onClick={handleLogout}>
+            <MdLogout /> Log Out
+          </button>
+        </div>
 
         {/* Profile */}
         <div className="card" style={{ marginBottom: 20 }}>
@@ -79,7 +108,7 @@ export default function Settings() {
         </div>
 
         {/* Notifications */}
-        <div className="card">
+        <div className="card" style={{ marginBottom: 20 }}>
           <div className="card-title"><MdNotifications /> Notifications</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
@@ -100,6 +129,13 @@ export default function Settings() {
             ))}
           </div>
           <button className="btn btn-primary" style={{ marginTop: 20 }} onClick={handleSettingsSave}><MdSave /> Save</button>
+        </div>
+
+        {/* Danger zone / logout repeated for clarity at bottom */}
+        <div className="card" style={{ borderColor: 'rgba(251,113,133,0.25)' }}>
+          <div className="card-title" style={{ color: 'var(--danger)' }}><MdLogout /> Session</div>
+          <p style={{ marginBottom: 16, fontSize: '0.85rem' }}>Log out of StudyFlow on this device.</p>
+          <button className="btn btn-danger" onClick={handleLogout}><MdLogout /> Log Out</button>
         </div>
       </div>
     </div>

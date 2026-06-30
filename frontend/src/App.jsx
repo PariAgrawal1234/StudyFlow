@@ -6,6 +6,7 @@ import { TimerProvider } from './context/TimerContext';
 import { SocketProvider } from './context/SocketContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
@@ -24,7 +25,9 @@ function AppLayout({ children }) {
     <div className="app-layout">
       <Sidebar />
       <main className="main-content">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </main>
     </div>
   );

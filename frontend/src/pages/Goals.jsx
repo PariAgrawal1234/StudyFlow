@@ -28,7 +28,9 @@ function GoalModal({ goal, onSave, onClose }) {
         toast.success('Goal created!');
       }
       onSave();
-    } catch { toast.error('Failed to save goal'); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save goal');
+    }
   };
 
   return (
@@ -96,18 +98,35 @@ export default function Goals() {
   const [activeGoals, setActiveGoals] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   const load = () => {
-    api.get('/goals').then(r => setGoals(r.data));
-    api.get('/goals/active').then(r => setActiveGoals(r.data));
+    setLoading(true);
+    setLoadError(null);
+    Promise.all([
+      api.get('/goals'),
+      api.get('/goals/active')
+    ]).then(([g, a]) => {
+      setGoals(g.data);
+      setActiveGoals(a.data);
+    }).catch((err) => {
+      console.error('Failed to load goals:', err);
+      setLoadError(err.response?.data?.message || 'Failed to load goals. Please refresh.');
+      toast.error('Failed to load goals');
+    }).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []);
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this goal?')) return;
-    await api.delete(`/goals/${id}`);
-    toast.success('Goal deleted');
-    load();
+    try {
+      await api.delete(`/goals/${id}`);
+      toast.success('Goal deleted');
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete goal');
+    }
   };
 
   return (
@@ -120,6 +139,22 @@ export default function Goals() {
           </button>
         </div>
 
+        {loading && (
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
+            <div style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: 'var(--accent-primary)', borderRadius: '50%', margin: '0 auto 12px', animation: 'spin 1s linear infinite' }} />
+            Loading goals...
+          </div>
+        )}
+
+        {!loading && loadError && (
+          <div className="card" style={{ borderColor: 'rgba(251,113,133,0.3)', marginBottom: 20, textAlign: 'center', padding: 24 }}>
+            <div style={{ color: 'var(--danger)', fontWeight: 600, marginBottom: 8 }}>⚠ {loadError}</div>
+            <button className="btn btn-secondary btn-sm" onClick={load}>Try Again</button>
+          </div>
+        )}
+
+        {!loading && !loadError && (
+        <>
         {activeGoals.length > 0 && (
           <div style={{ marginBottom: 24 }}>
             <h3 style={{ marginBottom: 12, color: 'var(--accent-green)', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>✓ Active Goals</h3>
@@ -206,6 +241,8 @@ export default function Goals() {
             <div className="empty-desc">Set a study goal to track your progress and stay motivated</div>
             <button className="btn btn-primary" onClick={() => setShowModal(true)}>Create Your First Goal</button>
           </div>
+        )}
+        </>
         )}
       </div>
       {showModal && <GoalModal goal={editing} onSave={() => { load(); setShowModal(false); }} onClose={() => setShowModal(false)} />}

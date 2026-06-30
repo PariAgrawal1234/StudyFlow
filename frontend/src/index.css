@@ -44,8 +44,8 @@
   --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
 
   --transition: all 0.2s ease;
-  --font-main: 'Inter', -apple-system, sans-serif;
-  --font-display: 'Syne', sans-serif;
+  --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 html { font-size: 14px; }

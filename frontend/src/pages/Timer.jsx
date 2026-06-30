@@ -3,7 +3,7 @@ import { useTimer } from '../context/TimerContext';
 import { useSocket } from '../context/SocketContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
-import { MdPlayArrow, MdStop, MdPause, MdHistory, MdFullscreen, MdFullscreenExit, MdKeyboard } from 'react-icons/md';
+import { MdPlayArrow, MdStop, MdPause, MdHistory, MdFullscreen, MdFullscreenExit, MdKeyboard, MdRestartAlt, MdSettings, MdClose } from 'react-icons/md';
 import { format } from 'date-fns';
 import '../styles/Timer.css';
 
@@ -29,13 +29,53 @@ function fmtHM(min) {
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
+function PomodoroSettingsModal({ settings, onSave, onClose }) {
+  const [form, setForm] = useState({ ...settings });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: Math.max(1, parseInt(v) || 1) }));
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ maxWidth: 380 }}>
+        <div className="modal-header">
+          <span className="modal-title">Pomodoro Settings</span>
+          <button className="modal-close" onClick={onClose}><MdClose /></button>
+        </div>
+        <div className="form-group">
+          <label>Focus Session (minutes)</label>
+          <input className="input" type="number" min="1" value={form.sessionMinutes} onChange={e => set('sessionMinutes', e.target.value)} />
+        </div>
+        <div className="form-row">
+          <div className="form-group">
+            <label>Short Break (min)</label>
+            <input className="input" type="number" min="1" value={form.breakMinutes} onChange={e => set('breakMinutes', e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Long Break (min)</label>
+            <input className="input" type="number" min="1" value={form.longBreakMinutes} onChange={e => set('longBreakMinutes', e.target.value)} />
+          </div>
+        </div>
+        <div className="form-group">
+          <label>Sessions before long break</label>
+          <input className="input" type="number" min="1" value={form.sessionsBeforeLongBreak} onChange={e => set('sessionsBeforeLongBreak', e.target.value)} />
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={() => { onSave(form); onClose(); }}>Save</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TimerPage() {
   const {
     isRunning, elapsed, timerType, setTimerType,
     selectedCourse, setSelectedCourse,
     accentColor, setAccentColor,
-    start, pause, resume, stop, formatTimerDisplay,
-    registerSocketEmitters
+    start, pause, resume, stop, reset, formatTimerDisplay,
+    registerSocketEmitters,
+    pomodoroSettings, updatePomodoroSettings,
+    pomodoroPhase, pomodoroCount, phaseSecondsLeft
   } = useTimer();
   const { emitTimerStart, emitTimerStop } = useSocket();
 
@@ -47,6 +87,7 @@ export default function TimerPage() {
   const [selectedStyle, setSelectedStyle] = useState(STYLES[1]);
   const [showCourseDropdown, setShowCourseDropdown] = useState(false);
   const [showNotesInput, setShowNotesInput] = useState(false);
+  const [showPomodoroSettings, setShowPomodoroSettings] = useState(false);
   const containerRef = useRef(null);
 
   const accent = ACCENT_COLORS.find(a => a.color === accentColor) || ACCENT_COLORS[0];
@@ -86,33 +127,50 @@ export default function TimerPage() {
     api.get('/sessions?limit=8').then(r => setSessions(r.data.sessions || []));
   };
 
+  const handleReset = () => {
+    if (isRunning || elapsed > 0) {
+      if (!confirm('Reset the timer? This will not save a session.')) return;
+    }
+    reset();
+  };
+
   const toggleFullscreen = () => {
     setIsFullscreen(f => !f);
     setShowPanel(!isFullscreen ? false : true);
   };
 
-  // Parse timer into parts for big display
-  const totalSecs = elapsed;
-  const hh = Math.floor(totalSecs / 3600);
-  const mm = Math.floor((totalSecs % 3600) / 60);
-  const ss = totalSecs % 60;
+  // Determine what to actually display: countdown for pomodoro, count-up for stopwatch
+  const displaySecs = timerType === 'pomodoro' ? phaseSecondsLeft : elapsed;
+  const hh = Math.floor(displaySecs / 3600);
+  const mm = Math.floor((displaySecs % 3600) / 60);
+  const ss = displaySecs % 60;
   const showHours = hh > 0;
+
+  const phaseLabel = pomodoroPhase === 'focus' ? 'Focus' : pomodoroPhase === 'longBreak' ? 'Long Break' : 'Short Break';
+  const phaseColor = pomodoroPhase === 'focus' ? accentColor : '#34D399';
 
   return (
     <div
       ref={containerRef}
       className={`timer-fullpage ${isFullscreen ? 'fullscreen' : ''}`}
-      style={{ background: isFullscreen || isRunning ? selectedStyle.bg : 'var(--bg-primary)' }}
+      style={{ background: selectedStyle.bg }}
     >
       {/* Top bar — only when not running in fullscreen */}
       {!isFullscreen && (
         <div className="timer-topbar">
           <h1 className="timer-page-title">Timer</h1>
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             <div className="tabs">
               <button className={`tab ${timerType === 'stopwatch' ? 'active' : ''}`} onClick={() => setTimerType('stopwatch')} disabled={isRunning}>Stopwatch</button>
-              <button className={`tab ${timerType === 'pomodoro' ? 'active' : ''}`} onClick={() => setTimerType('pomodoro')} disabled={isRunning}>Pomodoro 25m</button>
+              <button className={`tab ${timerType === 'pomodoro' ? 'active' : ''}`} onClick={() => setTimerType('pomodoro')} disabled={isRunning}>
+                Pomodoro {pomodoroSettings.sessionMinutes}/{pomodoroSettings.breakMinutes}
+              </button>
             </div>
+            {timerType === 'pomodoro' && (
+              <button className="btn btn-ghost btn-sm" onClick={() => setShowPomodoroSettings(true)} title="Customize Pomodoro" disabled={isRunning}>
+                <MdSettings style={{ fontSize: '1.2rem' }} />
+              </button>
+            )}
             <button className="btn btn-ghost btn-sm" onClick={toggleFullscreen} title="Fullscreen">
               <MdFullscreen style={{ fontSize: '1.3rem' }} />
             </button>
@@ -150,8 +208,15 @@ export default function TimerPage() {
             )}
           </div>
 
+          {/* Pomodoro phase indicator */}
+          {timerType === 'pomodoro' && (isRunning || elapsed > 0) && (
+            <div className="pomodoro-phase-badge" style={{ color: phaseColor, borderColor: phaseColor + '55', background: phaseColor + '15' }}>
+              {pomodoroPhase === 'focus' ? '🎯' : '☕'} {phaseLabel} · Round {pomodoroCount + 1}
+            </div>
+          )}
+
           {/* Big clock display */}
-          <div className="timer-clock" style={{ '--accent': accentColor, '--glow': accent.glow }}>
+          <div className="timer-clock" style={{ '--accent': timerType === 'pomodoro' ? phaseColor : accentColor, '--glow': accent.glow }}>
             {showHours ? (
               <>
                 <span className="clock-segment">{String(hh).padStart(2, '0')}</span>
@@ -163,17 +228,19 @@ export default function TimerPage() {
             ) : (
               <>
                 <span className="clock-segment">{String(mm).padStart(2, '0')}</span>
-                <span className="clock-colon" style={{ color: accentColor }}>:</span>
+                <span className="clock-colon" style={{ color: timerType === 'pomodoro' ? phaseColor : accentColor }}>:</span>
                 <span className="clock-segment">{String(ss).padStart(2, '0')}</span>
               </>
             )}
           </div>
 
-          {/* Start time */}
+          {/* Start time / total elapsed for pomodoro */}
           {isRunning && (
             <div className="timer-meta">
               <span className="timer-dot" style={{ background: accentColor }} />
-              Start: {format(new Date(Date.now() - elapsed * 1000), 'HH:mm')}
+              {timerType === 'pomodoro'
+                ? `Total studied: ${formatTimerDisplay(elapsed)}`
+                : `Start: ${format(new Date(Date.now() - elapsed * 1000), 'HH:mm')}`}
             </div>
           )}
           {!isRunning && elapsed === 0 && !isFullscreen && (
@@ -196,6 +263,9 @@ export default function TimerPage() {
                 <button className="timer-big-btn resume" style={{ '--btn-color': '#60A5FA', '--btn-glow': 'rgba(96,165,250,0.3)' }} onClick={resume}>
                   <MdPlayArrow /> Resume
                 </button>
+                <button className="timer-icon-btn" onClick={handleReset} title="Reset timer">
+                  <MdRestartAlt />
+                </button>
                 <button
                   className="timer-big-btn save"
                   style={{ '--btn-color': accentColor, '--btn-glow': accent.glow }}
@@ -209,6 +279,9 @@ export default function TimerPage() {
               <>
                 <button className="timer-big-btn pause" style={{ '--btn-color': '#94A3B8', '--btn-glow': 'rgba(148,163,184,0.2)' }} onClick={pause}>
                   <MdPause /> Pause
+                </button>
+                <button className="timer-icon-btn" onClick={handleReset} title="Reset timer">
+                  <MdRestartAlt />
                 </button>
                 <button
                   className="timer-big-btn save"
@@ -313,6 +386,14 @@ export default function TimerPage() {
         <button className="fullscreen-fab" onClick={toggleFullscreen} title="Enter focus mode">
           <MdFullscreen />
         </button>
+      )}
+
+      {showPomodoroSettings && (
+        <PomodoroSettingsModal
+          settings={pomodoroSettings}
+          onSave={updatePomodoroSettings}
+          onClose={() => setShowPomodoroSettings(false)}
+        />
       )}
     </div>
   );
