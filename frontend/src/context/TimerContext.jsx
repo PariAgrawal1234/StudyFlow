@@ -14,9 +14,13 @@ const DEFAULT_POMODORO_SETTINGS = {
 export const TimerProvider = ({ children }) => {
   const [isRunning, setIsRunning] = useState(false);
 
+  // Wall-clock based timing — no more drift
+  // wallStart: when this current running segment started (null if paused/stopped)
+  // accumulatedSecs: total seconds from all previous running segments (before this pause)
   const wallStartRef = useRef(null);
   const accumulatedSecsRef = useRef(0);
 
+  // elapsed is only used for display re-renders — computed from wall clock each tick
   const [elapsed, setElapsed] = useState(0);
 
   const [timerType, setTimerType] = useState('stopwatch');
@@ -191,7 +195,7 @@ export const TimerProvider = ({ children }) => {
     accumulatedSecsRef.current = 0;
 
     try {
-      await api.put(`/sessions/${sessionId}/end`, { notes });
+      await api.put(`/sessions/${sessionId}/end`, { notes, duration: finalElapsed });
       toast.success(`Session saved! ${formatTime(finalElapsed)} studied.`);
     } catch (err) {
       toast.error('Failed to save session');

@@ -35,12 +35,17 @@ router.post('/start', auth, async (req, res) => {
 // @route PUT /api/sessions/:id/end
 router.put('/:id/end', auth, async (req, res) => {
   try {
-    const { notes } = req.body;
+    const { notes, duration: clientDuration } = req.body;
     const session = await StudySession.findOne({ _id: req.params.id, user: req.user._id });
     if (!session) return res.status(404).json({ message: 'Session not found' });
 
     const endTime = new Date();
-    const duration = Math.round((endTime - session.startTime) / 60000);
+    // Use client-supplied duration (which excludes Pomodoro break time) if provided.
+    // Fall back to wall-clock difference only for stopwatch sessions where they match.
+    const wallDuration = Math.round((endTime - session.startTime) / 60000);
+    const duration = (clientDuration != null && clientDuration > 0)
+      ? Math.round(clientDuration / 60) // client sends seconds, convert to minutes
+      : wallDuration;
 
     session.endTime = endTime;
     session.duration = duration;
